@@ -1,0 +1,31 @@
+<div style="max-width:1180px;margin:0 auto;padding:clamp(40px,5vw,80px) clamp(20px,5vw,72px) 80px">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px"><span style="width:44px;height:1px;background:var(--color-accent);display:block"></span><span style="font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-accent-300)">Contact</span></div>
+  <h1 style="font-family:var(--font-heading);font-weight:500;font-size:clamp(36px,4.6vw,64px);line-height:1.08;letter-spacing:-0.02em;margin:0 0 48px;margin-left:-0.06em">Visit the clinic.</h1>
+  <div [style]="contactPageGrid()">
+    <div style="display:grid;gap:26px;font-size:16px;line-height:1.7">
+      <div><div style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:6px">Address</div>{{ clinic.addressLine1 }}<br>{{ clinic.addressLine2 }}</div>
+      <div><div style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:6px">Phone</div><a [href]="clinic.phoneHref">{{ clinic.phoneDisplay }}</a></div>
+      <div><div style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:6px">Email</div><a [href]="clinic.emailHref">{{ clinic.emailDisplay }}</a></div>
+      <div>
+        <div style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:10px">Opening hours</div>
+        <table class="table" style="width:100%;max-width:340px">
+          <tbody>
+            @for (row of clinic.hoursTable; track row[0]) {
+              <tr><td>{{ row[0] }}</td><td style="text-align:right">{{ row[1] }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button type="button" class="btn btn-primary" routerLink="/book">Book an Appointment</button>
+        <a class="btn btn-ghost" [href]="clinic.phoneHref">Call the clinic</a>
+      </div>
+    </div>
+    <div>
+      <div class="lighten" style="border-radius:var(--radius-md);overflow:hidden">
+        <img ngSrc="uploads/asc-map-contact.jpeg" width="1200" height="900" priority style="width:100%;height:auto;aspect-ratio:4/3;object-fit:cover" alt="Map of the clinic location">
+      </div>
+      <p style="font-size:14px;line-height:1.7;margin:16px 0 0;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Parking, landmark and public-transport notes go here once the clinic address is confirmed.</p>
+    </div>
+  </div>
+</div>

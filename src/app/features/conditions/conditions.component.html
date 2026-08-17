@@ -1,0 +1,17 @@
+<div style="max-width:1180px;margin:0 auto;padding:clamp(40px,5vw,80px) clamp(20px,5vw,72px) 80px">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px"><span style="width:44px;height:1px;background:var(--color-accent);display:block"></span><span style="font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-accent-300)">Concerns</span></div>
+  <h1 style="font-family:var(--font-heading);font-weight:500;font-size:clamp(36px,4.6vw,64px);line-height:1.08;letter-spacing:-0.02em;margin:0 0 20px;margin-left:-0.06em">What can we<br>help you with?</h1>
+  <p style="font-size:17px;line-height:1.7;max-width:54ch;margin:0 0 48px;color:color-mix(in srgb, var(--color-text) 80%, transparent)">Common concerns patients come in for. Select one to see the related treatments.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+    @for (c of conditions; track c.name) {
+      <a
+        routerLink="/treatments"
+        style="text-align:left;cursor:pointer;font-family:var(--font-body);font-size:16px;color:var(--color-text);background:color-mix(in srgb, var(--color-surface) 55%, transparent);border:0;box-shadow:var(--shadow-sm);border-radius:var(--radius-md);padding:20px;text-decoration:none;display:block"
+      >
+        {{ c.name }}
+        <div style="font-size:13px;margin-top:8px;color:color-mix(in srgb, var(--color-text) 60%, transparent)">{{ c.group }}</div>
+      </a>
+    }
+  </div>
+  <div style="margin-top:48px"><button type="button" class="btn btn-primary" routerLink="/book">Book an Appointment</button></div>
+</div>

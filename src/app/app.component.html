@@ -1,0 +1,15 @@
+<div class="app-shell">
+  @if (!isAdminRoute()) {
+    <app-nav />
+  }
+
+  <router-outlet />
+
+  @if (!isAdminRoute()) {
+    <app-footer />
+  }
+
+  @if (showStickyCta()) {
+    <app-sticky-cta />
+  }
+</div>

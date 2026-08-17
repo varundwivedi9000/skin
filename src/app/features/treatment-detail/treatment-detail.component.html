@@ -1,0 +1,34 @@
+<div style="max-width:1180px;margin:0 auto;padding:clamp(32px,4vw,64px) clamp(20px,5vw,72px) 80px">
+  <a routerLink="/treatments" style="font-size:14.5px">← All treatments</a>
+  <div [style]="detailGrid()">
+    <div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px"><span style="width:44px;height:1px;background:var(--color-accent);display:block"></span><span style="font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-accent-300)">{{ detail().group }}</span></div>
+      <h1 style="font-family:var(--font-heading);font-weight:500;font-size:clamp(34px,4.2vw,56px);line-height:1.1;letter-spacing:-0.02em;margin:0 0 22px;margin-left:-0.06em">{{ detail().name }}</h1>
+      <p style="font-size:17px;line-height:1.75;max-width:58ch;margin:0 0 44px;color:color-mix(in srgb, var(--color-text) 82%, transparent)">{{ detail().intro }}</p>
+      <h2 style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin:0 0 20px;letter-spacing:-0.01em">How the treatment runs</h2>
+      <div style="display:grid;gap:0;margin-bottom:44px">
+        @for (s of detail().steps; track s.n) {
+          <div style="display:grid;grid-template-columns:56px minmax(0,1fr);gap:20px;padding:20px 0;border-top:1px solid color-mix(in srgb, var(--color-neutral-700) 55%, transparent)">
+            <span style="font-family:var(--font-heading);font-weight:500;color:var(--color-accent-300);font-size:15px;font-feature-settings:'tnum' 1">{{ s.n }}</span>
+            <div>
+              <h3 style="font-family:var(--font-heading);font-weight:500;font-size:18px;margin:0 0 8px">{{ s.title }}</h3>
+              <p style="font-size:15.5px;line-height:1.7;margin:0;color:color-mix(in srgb, var(--color-text) 78%, transparent)">{{ s.body }}</p>
+            </div>
+          </div>
+        }
+      </div>
+      <h2 style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin:0 0 14px;letter-spacing:-0.01em">Good to know</h2>
+      <p style="font-size:15.5px;line-height:1.75;max-width:58ch;margin:0;color:color-mix(in srgb, var(--color-text) 78%, transparent)">Session count, intervals and pricing depend on the individual assessment. Most courses run a handful of sessions spaced several weeks apart; your doctor will confirm the specifics for your skin and concern at the first consultation.</p>
+    </div>
+    <div [style]="stickySide()">
+      <div class="lighten" style="border-radius:var(--radius-md);overflow:hidden;margin-bottom:18px">
+        <img ngSrc="uploads/asc-detail-photo.jpeg" width="900" height="1200" style="width:100%;height:auto;aspect-ratio:3/4;object-fit:cover" alt="Treatment or clinic photograph">
+      </div>
+      <div class="card">
+        <div class="card-kicker">Consultation</div>
+        <div class="card-body" style="margin-bottom:16px">Book a consultation to find out whether this treatment is right for you.</div>
+        <button type="button" class="btn btn-primary btn-block" routerLink="/book">Book an Appointment</button>
+      </div>
+    </div>
+  </div>
+</div>

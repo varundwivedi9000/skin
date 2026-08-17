@@ -1,0 +1,201 @@
+@if (screen() === 'wizard') {
+  <div style="max-width:900px;margin:0 auto;padding:clamp(32px,4vw,64px) clamp(20px,5vw,48px) 80px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:36px">
+      <h1 style="font-family:var(--font-heading);font-weight:500;font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:-0.018em;margin:0">Book an appointment</h1>
+      <a routerLink="/" style="font-size:14.5px">Cancel</a>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:40px">
+      @for (s of stepBars(); track s.label) {
+        <div style="flex:1;min-width:0">
+          <div [style]="'height:2px;border-radius:2px;background:' + s.bar"></div>
+          <div [style]="'font-size:12.5px;letter-spacing:0.05em;text-transform:uppercase;margin-top:10px;color:' + s.ink">{{ s.label }}</div>
+        </div>
+      }
+    </div>
+
+    @if (step() === 1) {
+      <div>
+        <h2 style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin:0 0 20px;letter-spacing:-0.01em">Choose a doctor</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+          @for (d of doctorChoiceViews(); track d.id) {
+            <button type="button" (click)="pickDoctor(d.id)" [style]="d.style">
+              <div style="font-family:var(--font-heading);font-weight:500;font-size:18px;margin-bottom:6px">{{ d.name }}</div>
+              <div style="font-size:14px;color:var(--color-accent-300);margin-bottom:10px">{{ d.role }}</div>
+              <div style="font-size:14px;line-height:1.6;color:color-mix(in srgb, var(--color-text) 70%, transparent)">{{ d.focus }}</div>
+            </button>
+          }
+        </div>
+        <div style="margin-top:32px"><button type="button" class="btn btn-primary" (click)="toStep2()">Continue</button></div>
+      </div>
+    }
+
+    @if (step() === 2) {
+      <div>
+        <h2 style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin:0 0 8px;letter-spacing:-0.01em">Choose a date</h2>
+
+        @if (windowLoading()) {
+          <p style="font-size:14.5px;margin:0 0 22px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Loading availability…</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            @for (k of [1, 2, 3, 4, 5, 6, 7]; track k) {
+              <div style="width:92px;height:88px;border-radius:var(--radius-md);background:linear-gradient(90deg, color-mix(in srgb, var(--color-surface) 70%, transparent), color-mix(in srgb, var(--color-neutral-800) 70%, transparent), color-mix(in srgb, var(--color-surface) 70%, transparent));background-size:200% 100%;animation:asc-shimmer 1.2s linear infinite"></div>
+            }
+          </div>
+        } @else if (windowError()) {
+          <div style="padding:32px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);background:color-mix(in srgb, var(--color-surface) 55%, transparent);max-width:520px">
+            <div style="font-family:var(--font-heading);font-weight:500;font-size:18px;margin-bottom:8px">Couldn't load availability</div>
+            <p style="font-size:15px;line-height:1.7;margin:0 0 18px;color:color-mix(in srgb, var(--color-text) 72%, transparent)">Check your connection and try again, or call the clinic to book by phone.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button type="button" class="btn btn-ghost" (click)="retryWindow()">Try again</button>
+              <a class="btn btn-ghost" [href]="clinic.phoneHref">Call the clinic</a>
+            </div>
+          </div>
+        } @else {
+          <p style="font-size:14.5px;margin:0 0 22px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Appointments can be booked up to {{ windowLabel() }} ahead.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            @for (d of dayViews(); track d.iso) {
+              <button type="button" (click)="pickDate(d.iso)" [disabled]="d.disabled" [style]="d.style">
+                <div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;opacity:0.72">{{ d.dow }}</div>
+                <div style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin-top:6px;font-feature-settings:'tnum' 1">{{ d.dnum }}</div>
+                <div style="font-size:12px;margin-top:4px;opacity:0.72">{{ d.mon }}</div>
+                <div [style]="'font-size:11px;margin-top:8px;letter-spacing:0.04em;text-transform:uppercase;color:' + d.noteInk">{{ d.note }}</div>
+              </button>
+            }
+          </div>
+        }
+
+        <div style="margin-top:32px;display:flex;gap:12px">
+          <button type="button" class="btn btn-ghost" (click)="toStep1()">Back</button>
+          <button type="button" class="btn btn-primary" [disabled]="windowLoading() || windowError()" (click)="toStep3()">Continue</button>
+        </div>
+      </div>
+    }
+
+    @if (step() === 3) {
+      <div>
+        <h2 style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin:0 0 8px;letter-spacing:-0.01em">{{ dateHeading() }}</h2>
+        <p style="font-size:14.5px;margin:0 0 22px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Only available slots are shown. {{ slotCountLabel() }}</p>
+
+        @if (slotsLoading()) {
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            @for (k of [1, 2, 3, 4, 5, 6, 7, 8]; track k) {
+              <div style="width:104px;height:44px;border-radius:var(--radius-md);background:linear-gradient(90deg, color-mix(in srgb, var(--color-surface) 70%, transparent), color-mix(in srgb, var(--color-neutral-800) 70%, transparent), color-mix(in srgb, var(--color-surface) 70%, transparent));background-size:200% 100%;animation:asc-shimmer 1.2s linear infinite"></div>
+            }
+          </div>
+        }
+
+        @if (slotsEmpty()) {
+          <div style="padding:32px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);background:color-mix(in srgb, var(--color-surface) 55%, transparent);max-width:520px">
+            <div style="font-family:var(--font-heading);font-weight:500;font-size:18px;margin-bottom:8px">No slots on this date</div>
+            <p style="font-size:15px;line-height:1.7;margin:0 0 18px;color:color-mix(in srgb, var(--color-text) 72%, transparent)">The clinic isn't taking appointments on this day. Pick another date within the booking window, or call the clinic.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button type="button" class="btn btn-ghost" (click)="toStep2()">Choose another date</button>
+              <a class="btn btn-ghost" [href]="clinic.phoneHref">Call the clinic</a>
+            </div>
+          </div>
+        }
+
+        @if (slotsReady()) {
+          <div>
+            @for (sess of slotSessionViews(); track sess.label) {
+              <div style="margin-bottom:28px">
+                <div style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:12px">{{ sess.label }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:10px">
+                  @for (s of sess.slots; track s.time) {
+                    <button type="button" (click)="pickTime(s.time)" [style]="s.style">{{ s.label }}</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <div style="margin-top:24px;display:flex;gap:12px">
+          <button type="button" class="btn btn-ghost" (click)="toStep2()">Back</button>
+          <button type="button" class="btn btn-primary" (click)="toStep4()">Continue</button>
+        </div>
+      </div>
+    }
+
+    @if (step() === 4) {
+      <div [style]="bookGrid()">
+        <div>
+          <h2 style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin:0 0 22px;letter-spacing:-0.01em">Your details</h2>
+          <div style="display:grid;gap:18px;max-width:440px">
+            <div class="field">
+              <label for="asc-name">Full name</label>
+              <input class="input" id="asc-name" type="text" [value]="form().name" (input)="setName($event)" placeholder="Name as you'd like it on the appointment">
+              @if (errors().name) {
+                <div style="font-size:13.5px;margin-top:8px;color:var(--color-accent-300)">{{ errors().name }}</div>
+              }
+            </div>
+            <div class="field">
+              <label for="asc-phone">Phone number</label>
+              <input class="input" id="asc-phone" type="tel" [value]="form().phone" (input)="setPhone($event)" placeholder="10-digit mobile number">
+              @if (errors().phone) {
+                <div style="font-size:13.5px;margin-top:8px;color:var(--color-accent-300)">{{ errors().phone }}</div>
+              }
+            </div>
+            <div class="field">
+              <label for="asc-email">Email <span style="text-transform:none;letter-spacing:0;opacity:0.6">(optional)</span></label>
+              <input class="input" id="asc-email" type="email" [value]="form().email" (input)="setEmail($event)" placeholder="For the confirmation email">
+            </div>
+            <div class="field">
+              <label for="asc-reason">Reason for visit <span style="text-transform:none;letter-spacing:0;opacity:0.6">(optional)</span></label>
+              <input class="input" id="asc-reason" type="text" [value]="form().reason" (input)="setReason($event)" placeholder="e.g. acne, hair loss, follow-up">
+            </div>
+
+            @if (bookingError(); as be) {
+              <div style="padding:16px 18px;border-radius:var(--radius-md);box-shadow:0 0 0 1px var(--color-accent-700);background:color-mix(in srgb, var(--color-accent) 10%, transparent)">
+                <div style="font-family:var(--font-heading);font-weight:500;font-size:16px;margin-bottom:6px">{{ be.title }}</div>
+                <p style="font-size:14.5px;line-height:1.65;margin:0 0 14px;color:color-mix(in srgb, var(--color-text) 80%, transparent)">{{ be.body }}</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-primary" (click)="retryBookingError()">{{ be.kind === 'taken' ? 'Choose another time' : 'Try again' }}</button>
+                  <a class="btn btn-ghost" [href]="clinic.phoneHref">Call the clinic</a>
+                </div>
+              </div>
+            }
+            @if (errors().form) {
+              <div style="padding:14px 16px;border-radius:var(--radius-md);box-shadow:0 0 0 1px var(--color-accent-700);background:color-mix(in srgb, var(--color-accent) 10%, transparent);font-size:14px;line-height:1.6">{{ errors().form }}</div>
+            }
+
+            <div style="display:flex;gap:12px;margin-top:6px">
+              <button type="button" class="btn btn-ghost" (click)="toStep3()">Back</button>
+              <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="confirmBooking()">{{ submitLabel() }}</button>
+            </div>
+            <p style="font-size:13px;line-height:1.6;margin:0;color:color-mix(in srgb, var(--color-text) 58%, transparent)">No account needed. We use your phone number only to confirm the appointment.</p>
+          </div>
+        </div>
+        <div class="card" [style]="summarySticky()">
+          <div class="card-kicker">Appointment summary</div>
+          <div style="display:grid;gap:14px;margin-top:14px;font-size:15px">
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Doctor</div>{{ summary().doctor }}</div>
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Date</div>{{ summary().date }}</div>
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Time</div>{{ summary().time }}</div>
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Clinic</div>{{ clinic.addressLine1 }}, {{ clinic.addressLine2 }}</div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (screen() === 'confirmed' && bookedView(); as booked) {
+  <div style="max-width:720px;margin:0 auto;padding:clamp(48px,7vw,110px) clamp(20px,5vw,48px) 96px">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px"><span style="width:44px;height:1px;background:var(--color-accent);display:block"></span><span style="font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-accent-300)">Confirmed</span></div>
+    <h1 style="font-family:var(--font-heading);font-weight:500;font-size:clamp(34px,4.4vw,56px);line-height:1.1;letter-spacing:-0.02em;margin:0 0 32px;margin-left:-0.06em">Appointment confirmed</h1>
+    <div class="card elev-md" style="margin-bottom:28px">
+      <div style="display:grid;gap:18px;font-size:16px">
+        <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Doctor</div>{{ booked.doctorName }}</div>
+        <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">When</div><span style="font-family:var(--font-heading);font-weight:500;font-size:20px">{{ booked.dateLong }} · {{ booked.timeLabel }}</span></div>
+        <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Patient</div>{{ booked.name }} · {{ booked.phone }}</div>
+        <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Clinic</div>{{ clinic.name }}<br>{{ clinic.addressLine1 }}, {{ clinic.addressLine2 }}</div>
+      </div>
+    </div>
+    <p style="font-size:15px;line-height:1.7;margin:0 0 28px;color:color-mix(in srgb, var(--color-text) 75%, transparent)">Please arrive five minutes early. To reschedule or cancel, call the clinic.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn btn-primary" [href]="booked.ics" download="appointment.ics">Add to Calendar</a>
+      <a class="btn btn-ghost" [href]="clinic.phoneHref">Call Clinic</a>
+      <a class="btn btn-ghost" routerLink="/">Back to Home</a>
+    </div>
+  </div>
+}

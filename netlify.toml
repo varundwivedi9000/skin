@@ -1,0 +1,43 @@
+[build]
+  command = "npm run build"
+  publish = "dist/skin/browser"
+
+[build.environment]
+  # These are baked into the client bundle by design (Firebase web config is
+  # public; security is enforced by Firestore rules, not by hiding these
+  # values — and ADMIN_PATH has to ship client-side for the Angular router to
+  # match it). Netlify's secret scanner otherwise flags them as "exposed
+  # secrets" even though none of them are secret. Real secrets
+  # (ADMIN_PASSCODE, FIREBASE_SERVICE_ACCOUNT_KEY) are deliberately left out
+  # of this list so scanning still catches those if they ever leak.
+  SECRETS_SCAN_OMIT_KEYS = "FIREBASE_API_KEY,FIREBASE_AUTH_DOMAIN,FIREBASE_PROJECT_ID,FIREBASE_STORAGE_BUCKET,FIREBASE_MESSAGING_SENDER_ID,FIREBASE_APP_ID,ADMIN_PATH"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  # firebase-admin pulls in @grpc/grpc-js/google-gax, which use dynamic
+  # require() esbuild can't statically bundle correctly. Leaving it external
+  # makes Netlify ship it as a normal node_modules dependency instead of
+  # trying to inline it into the function bundle.
+  external_node_modules = ["firebase-admin"]
+
+[dev]
+  framework = "#custom"
+  command = "npm start"
+  targetPort = 4200
+  port = 8888
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/uploads/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

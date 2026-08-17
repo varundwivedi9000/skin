@@ -1,0 +1,205 @@
+<div>
+@if (auth.isAuthenticated()) {
+  <div class="nav" style="padding-inline:clamp(20px,4vw,48px)">
+    <span class="nav-brand">Awesome Skin Clinic <span style="font-weight:400;font-size:13px;color:var(--color-accent-300);letter-spacing:0.06em;text-transform:uppercase;margin-left:10px">Doctor view</span></span>
+    <a (click)="setTab('today')" style="cursor:pointer">Today</a>
+    <a (click)="setTab('upcoming')" style="cursor:pointer">Upcoming</a>
+    <a (click)="setTab('avail')" style="cursor:pointer">Availability</a>
+    <button type="button" class="btn btn-ghost" routerLink="/">Back to site</button>
+    <button type="button" class="btn btn-ghost" (click)="logout()">Sign out</button>
+  </div>
+
+  <div style="max-width:1080px;margin:0 auto;padding:clamp(28px,4vw,56px) clamp(20px,4vw,48px) 80px">
+    <h1 style="font-family:var(--font-heading);font-weight:500;font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-0.018em;margin:0 0 6px">{{ adminHeading() }}</h1>
+    <p style="font-size:14.5px;margin:0 0 36px;color:color-mix(in srgb, var(--color-text) 62%, transparent)">{{ adminSub() }}</p>
+
+    @if (tab() === 'today') {
+      <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:0;max-width:720px">
+        @if (todayBlocked()) {
+          <div style="padding:20px;border-radius:var(--radius-md);box-shadow:0 0 0 1px var(--color-accent-700);background:color-mix(in srgb, var(--color-accent) 10%, transparent);font-size:15px;margin-bottom:20px">Today is marked unavailable. No new bookings can be made.</div>
+        }
+        @for (row of todayRows(); track row.time) {
+          <button
+            type="button"
+            (click)="openApptRow(row.id)"
+            [style]="'display:flex;align-items:center;gap:16px;width:100%;cursor:' + (row.id ? 'pointer' : 'default') + ';font-family:var(--font-body);color:var(--color-text);border:0;background:transparent;padding:16px 4px;border-bottom:1px solid color-mix(in srgb, var(--color-neutral-800) 90%, transparent);'"
+          >
+            <span style="font-family:var(--font-heading);font-weight:500;font-size:15px;width:88px;text-align:left;font-feature-settings:'tnum' 1">{{ row.time }}</span>
+            <span [style]="'flex:1;text-align:left;font-size:15px;color:' + row.ink">{{ row.label }}</span>
+            <span [class]="row.tagClass">{{ row.status }}</span>
+          </button>
+        }
+        @if (todayEmpty()) {
+          <div style="padding:32px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);background:color-mix(in srgb, var(--color-surface) 55%, transparent)">
+            <div style="font-family:var(--font-heading);font-weight:500;font-size:18px;margin-bottom:8px">Nothing scheduled today</div>
+            <p style="font-size:15px;line-height:1.7;margin:0;color:color-mix(in srgb, var(--color-text) 70%, transparent)">Either the clinic is closed today or working hours haven't been set. Configure them under Availability.</p>
+          </div>
+        }
+      </div>
+    }
+
+    @if (tab() === 'upcoming') {
+      <div style="max-width:820px">
+        @if (upcomingEmpty()) {
+          <div style="padding:32px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);background:color-mix(in srgb, var(--color-surface) 55%, transparent)">
+            <div style="font-family:var(--font-heading);font-weight:500;font-size:18px;margin-bottom:8px">No upcoming appointments</div>
+            <p style="font-size:15px;line-height:1.7;margin:0;color:color-mix(in srgb, var(--color-text) 70%, transparent)">Bookings for the next seven days will appear here as patients make them.</p>
+          </div>
+        }
+        @for (g of upcomingGroups(); track g.iso) {
+          <div style="margin-bottom:32px">
+            <div style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-accent-300);margin-bottom:12px">{{ g.label }}</div>
+            <table class="table" style="width:100%">
+              <thead><tr><th style="width:100px">Time</th><th>Patient</th><th>Reason</th><th style="width:120px">Doctor</th><th style="width:110px">Status</th></tr></thead>
+              <tbody>
+                @for (r of g.rows; track r.id) {
+                  <tr (click)="openApptRow(r.id)" style="cursor:pointer">
+                    <td style="font-feature-settings:'tnum' 1">{{ r.time }}</td>
+                    <td>{{ r.name }}</td>
+                    <td style="color:color-mix(in srgb, var(--color-text) 70%, transparent)">{{ r.reason }}</td>
+                    <td style="color:color-mix(in srgb, var(--color-text) 70%, transparent)">{{ r.doctor }}</td>
+                    <td><span class="tag tag-accent">{{ r.status }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    @if (tab() === 'avail') {
+      <div style="display:grid;gap:40px;max-width:860px">
+        <div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <h2 style="font-family:var(--font-heading);font-weight:500;font-size:20px;margin:0 0 6px;letter-spacing:-0.01em">Block a full day</h2>
+            @if (hasBlocks()) {
+              <button type="button" class="btn btn-ghost" (click)="restoreAll()">Restore all availability</button>
+            }
+          </div>
+          <p style="font-size:14.5px;margin:0 0 16px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Tap a date to close it. Patients see no slots on closed days. Tap again to reopen.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            @for (d of adminDays(); track d.iso) {
+              <button type="button" (click)="toggleDay(d)" [style]="d.style">
+                <div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;opacity:0.72">{{ d.dow }}</div>
+                <div style="font-family:var(--font-heading);font-weight:500;font-size:22px;margin-top:6px;font-feature-settings:'tnum' 1">{{ d.dnum }}</div>
+                <div style="font-size:11px;margin-top:8px;letter-spacing:0.04em;text-transform:uppercase">{{ d.state }}</div>
+                <div style="font-size:11px;margin-top:4px;color:color-mix(in srgb, var(--color-text) 55%, transparent)">{{ d.booked }}</div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div>
+          <h2 style="font-family:var(--font-heading);font-weight:500;font-size:20px;margin:0 0 6px;letter-spacing:-0.01em">Block a time range</h2>
+          <p style="font-size:14.5px;margin:0 0 16px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Slots inside the range disappear from patient booking.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
+            <div class="field" style="min-width:170px">
+              <label for="asc-blk-date">Date</label>
+              <input class="input" id="asc-blk-date" type="date" [value]="rangeDraft().date" [attr.min]="todayIso" [attr.max]="rangeMax()" (input)="setRangeDate($event)">
+            </div>
+            <div class="field"><label for="asc-blk-s">From</label><input class="input" id="asc-blk-s" type="time" [value]="rangeDraft().s" (input)="setRangeStart($event)"></div>
+            <div class="field"><label for="asc-blk-e">To</label><input class="input" id="asc-blk-e" type="time" [value]="rangeDraft().e" (input)="setRangeEnd($event)"></div>
+            <button type="button" class="btn btn-primary" (click)="addRange()">Block range</button>
+          </div>
+          @if (rangeError()) {
+            <div style="font-size:13.5px;margin-top:10px;color:var(--color-accent-300)">{{ rangeError() }}</div>
+          }
+          <div style="margin-top:22px;display:grid;gap:10px">
+            @for (b of blocks(); track b.key) {
+              <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:var(--radius-md);box-shadow:var(--shadow-sm);background:color-mix(in srgb, var(--color-surface) 55%, transparent)">
+                <span style="flex:1;font-size:15px">{{ b.label }}</span>
+                <span class="tag tag-neutral">{{ b.kind }}</span>
+                <button type="button" class="btn btn-ghost" (click)="b.restore()">Restore</button>
+              </div>
+            }
+            @if (blocksEmpty()) {
+              <p style="font-size:14.5px;margin:0;color:color-mix(in srgb, var(--color-text) 60%, transparent)">No blocks. The clinic is open at normal hours for the whole booking window.</p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <h2 style="font-family:var(--font-heading);font-weight:500;font-size:20px;margin:0 0 6px;letter-spacing:-0.01em">Working hours &amp; slot length</h2>
+          <p style="font-size:14.5px;margin:0 0 16px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">Two sessions a day. Changes apply to the patient booking view immediately.</p>
+          @if (config(); as cfg) {
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:22px">
+              <div class="field"><label for="asc-m-s">Morning from</label><input class="input" id="asc-m-s" type="time" [value]="cfg.hours.m1" (input)="setHour('m1', $event)"></div>
+              <div class="field"><label for="asc-m-e">Morning to</label><input class="input" id="asc-m-e" type="time" [value]="cfg.hours.m2" (input)="setHour('m2', $event)"></div>
+              <div class="field"><label for="asc-e-s">Evening from</label><input class="input" id="asc-e-s" type="time" [value]="cfg.hours.e1" (input)="setHour('e1', $event)"></div>
+              <div class="field"><label for="asc-e-e">Evening to</label><input class="input" id="asc-e-e" type="time" [value]="cfg.hours.e2" (input)="setHour('e2', $event)"></div>
+            </div>
+          }
+          @if (hoursError()) {
+            <div style="font-size:13.5px;margin:-10px 0 18px;color:var(--color-accent-300)">{{ hoursError() }}</div>
+          }
+          <div style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:10px">Appointment length</div>
+          <div style="display:flex;gap:10px">
+            @for (d of durations(); track d.n) {
+              <button type="button" (click)="setSlotMin(d.n)" [style]="d.style">{{ d.label }}</button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (openAppt(); as appt) {
+    <div class="dialog-backdrop" (click)="closeAppt()">
+      <div class="dialog" (click)="stop($event)">
+        <div class="dialog-title">{{ appt.name }}</div>
+        <div class="dialog-body">
+          <div style="display:grid;gap:14px;font-size:15px">
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">When</div>{{ appt.dateLong }} · {{ appt.timeLabel }}</div>
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Doctor</div>{{ appt.doctorName }}</div>
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Phone</div>{{ appt.phone }}</div>
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Email</div>{{ appt.emailLabel }}</div>
+            <div><div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:4px">Reason for visit</div>{{ appt.reasonLabel }}</div>
+            <div><span class="tag tag-accent">{{ appt.status }}</span></div>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-ghost" (click)="cancelAppt()">Cancel appointment</button>
+          <button type="button" class="btn btn-primary" (click)="closeAppt()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (confirmBlockView(); as cb) {
+    <div class="dialog-backdrop" (click)="dismissBlock()">
+      <div class="dialog" (click)="stop($event)">
+        <div class="dialog-title">{{ cb.title }}</div>
+        <div class="dialog-body">
+          <p style="font-size:15px;line-height:1.7;margin:0">{{ cb.body }}</p>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-ghost" (click)="dismissBlock()">Keep the day open</button>
+          <button type="button" class="btn btn-primary" (click)="acceptBlock()">Block anyway</button>
+        </div>
+      </div>
+    </div>
+  }
+} @else {
+  <div style="max-width:400px;margin:0 auto;padding:clamp(64px,10vw,140px) 20px 80px">
+    <h1 style="font-family:var(--font-heading);font-weight:500;font-size:clamp(28px,3.4vw,36px);margin:0 0 8px;letter-spacing:-0.015em">Doctor sign-in</h1>
+    <p style="font-size:14.5px;margin:0 0 32px;color:color-mix(in srgb, var(--color-text) 65%, transparent)">
+      Enter the clinic passcode to continue. This device will stay signed in for 30 days.
+    </p>
+    <form style="display:grid;gap:18px" (submit)="submitLogin($event)">
+      <div class="field">
+        <label for="asc-admin-passcode">Passcode</label>
+        <input class="input" id="asc-admin-passcode" type="password" inputmode="numeric" autocomplete="current-password" [value]="passcode()" (input)="setPasscode($event)" required autofocus>
+      </div>
+      @if (loginError()) {
+        <div style="padding:14px 16px;border-radius:var(--radius-md);box-shadow:0 0 0 1px var(--color-accent-700);background:color-mix(in srgb, var(--color-accent) 10%, transparent);font-size:14px;line-height:1.6">
+          {{ loginError() }}
+        </div>
+      }
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loginSubmitting()">
+        {{ loginSubmitting() ? 'Checking…' : 'Continue' }}
+      </button>
+    </form>
+  </div>
+}
+</div>

@@ -1,0 +1,45 @@
+<nav
+  class="nav"
+  style="padding-inline:clamp(20px,5vw,72px);position:sticky;top:0;z-index:40;backdrop-filter:blur(10px);background:color-mix(in srgb, var(--color-bg) 88%, transparent)"
+>
+  <span class="nav-brand" style="letter-spacing:-0.01em">Awesome Skin Clinic</span>
+
+  @if (!viewport.isMobile()) {
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">Home</a>
+    <a routerLink="/treatments" routerLinkActive="active" ariaCurrentWhenActive="page">Treatments</a>
+    <a routerLink="/conditions" routerLinkActive="active" ariaCurrentWhenActive="page">Conditions</a>
+    <a routerLink="/doctors" routerLinkActive="active" ariaCurrentWhenActive="page">Our Doctors</a>
+    <a routerLink="/contact" routerLinkActive="active" ariaCurrentWhenActive="page">Contact</a>
+    <button type="button" class="btn btn-primary" routerLink="/book">Book Appointment</button>
+  } @else {
+    <button
+      type="button"
+      class="btn btn-ghost"
+      (click)="toggleMenu()"
+      style="margin-left:auto;min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;gap:8px"
+      aria-label="Menu"
+    >
+      <span style="display:grid;gap:4px">
+        <span style="display:block;width:16px;height:1.5px;background:currentColor"></span>
+        <span style="display:block;width:16px;height:1.5px;background:currentColor"></span>
+        <span style="display:block;width:16px;height:1.5px;background:currentColor"></span>
+      </span>
+      {{ menuOpen() ? 'Close' : 'Menu' }}
+    </button>
+  }
+</nav>
+
+@if (viewport.isMobile() && menuOpen()) {
+  <div
+    style="position:sticky;top:52px;z-index:39;padding:16px 20px 22px;background:color-mix(in srgb, var(--color-bg) 97%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb, var(--color-neutral-800) 90%, transparent);display:grid;gap:2px"
+  >
+    <a routerLink="/" style="padding:12px 0;font-size:17px;min-height:44px">Home</a>
+    <a routerLink="/doctors" style="padding:12px 0;font-size:17px;min-height:44px">Our Doctors</a>
+    <a routerLink="/treatments" style="padding:12px 0;font-size:17px;min-height:44px">Treatments</a>
+    <a routerLink="/conditions" style="padding:12px 0;font-size:17px;min-height:44px">Conditions</a>
+    <a routerLink="/contact" style="padding:12px 0;font-size:17px;min-height:44px">Contact</a>
+    <button type="button" class="btn btn-primary btn-block" routerLink="/book" style="margin-top:12px;min-height:48px">
+      Book Appointment
+    </button>
+  </div>
+}

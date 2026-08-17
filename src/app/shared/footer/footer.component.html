@@ -1,0 +1,40 @@
+<footer style="border-top:1px solid color-mix(in srgb, var(--color-neutral-800) 90%, transparent);margin-top:24px">
+  <div [style]="footerGrid()">
+    <div>
+      <div style="font-family:var(--font-heading);font-weight:500;font-size:18px;letter-spacing:-0.01em;margin-bottom:12px">
+        {{ clinic.name }}
+      </div>
+      <p style="font-size:14.5px;line-height:1.7;margin:0;color:color-mix(in srgb, var(--color-text) 65%, transparent)">
+        Independent dermatology practice for skin, hair and aesthetic concerns.
+      </p>
+    </div>
+    <div style="display:grid;gap:10px;font-size:14.5px;align-content:start">
+      <div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent)">Clinic</div>
+      <a routerLink="/">Home</a>
+      <a routerLink="/doctors">Our Doctors</a>
+      <a routerLink="/contact">Contact</a>
+    </div>
+    <div style="display:grid;gap:10px;font-size:14.5px;align-content:start">
+      <div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent)">Treatments</div>
+      <a routerLink="/treatments">Clinical dermatology</a>
+      <a routerLink="/treatments">Aesthetic dermatology</a>
+      <a routerLink="/treatments">Hair &amp; scalp</a>
+      <a routerLink="/conditions">Conditions</a>
+    </div>
+    <div style="display:grid;gap:10px;font-size:14.5px;align-content:start;min-width:0;overflow-wrap:anywhere">
+      <div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent)">Contact</div>
+      <a [href]="clinic.phoneHref">{{ clinic.phoneDisplay }}</a>
+      <span style="color:color-mix(in srgb, var(--color-text) 65%, transparent)">{{ clinic.addressLine2 }}</span>
+      <a [href]="clinic.emailHref">{{ clinic.emailDisplay }}</a>
+    </div>
+  </div>
+  <div
+    style="max-width:1180px;margin:0 auto;padding:0 clamp(20px,5vw,72px) 44px;display:flex;gap:20px;flex-wrap:wrap;justify-content:space-between;font-size:13px;color:color-mix(in srgb, var(--color-text) 52%, transparent)"
+  >
+    <span>&copy; {{ year }} {{ clinic.name }}</span>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <a href="#" (click)="$event.preventDefault()">Privacy Policy</a>
+      <a href="#" (click)="$event.preventDefault()">Terms</a>
+    </div>
+  </div>
+</footer>

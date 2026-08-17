@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The doctor's session carries this custom claim, minted fresh on every
+    // successful passcode check by the adminLogin Netlify Function (see
+    // netlify/functions/adminLogin.mts). This is the actual authorization
+    // check — the Angular admin app never decides who's allowed to write, it
+    // just makes the request and lets these rules accept or reject it.
+    function isDoctor() {
+      return request.auth != null && request.auth.token.doctor == true;
+    }
+
+    // Patients have no accounts and never read or write this collection
+    // directly — they go through the getBookingWindow / getSlotsForDate /
+    // createAppointment Netlify Functions, which use the Admin SDK and
+    // bypass these rules entirely. The doctor's admin dashboard reads and
+    // writes straight through the client SDK, gated by isDoctor() here.
+    match /appointments/{appointmentId} {
+      allow read, update, delete: if isDoctor();
+      allow create: if false;
+    }
+
+    match /settings/availability {
+      allow read, write: if isDoctor();
+    }
+
+    // Passcode brute-force tracking for adminLogin — only the Netlify
+    // Function (Admin SDK) ever touches this; no client, authenticated or
+    // not, reads or writes it directly.
+    match /adminLoginAttempts/{attemptId} {
+      allow read, write: if false;
+    }
+  }
+}
